@@ -13,7 +13,7 @@ namespace CodingExercisePDE.Entities
 
         public RandomNumber(int number)
         {
-            RandomNumberId = Guid.NewGuid();
+            //RandomNumberId = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
             Number = number;            
         }
