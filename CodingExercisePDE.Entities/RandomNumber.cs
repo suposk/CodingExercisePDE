@@ -6,6 +6,19 @@ namespace CodingExercisePDE.Entities
 {
     public class RandomNumber
     {
+        public RandomNumber()
+        {
+            
+        }
+
+        public RandomNumber(int number, DateTime? modifiedAt = null)
+        {
+            RandomNumberId = Guid.NewGuid();
+            CreatedAt = DateTime.UtcNow;
+            Number = number;
+            ModifiedAt = modifiedAt;
+        }
+
         public Guid RandomNumberId { get; set; }
 
         public int Number { get; set; }        
