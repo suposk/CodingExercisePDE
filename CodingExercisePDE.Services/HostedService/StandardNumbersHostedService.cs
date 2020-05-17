@@ -19,18 +19,19 @@ namespace CodingExercisePDE.Services.HostedService
         private readonly HttpClient _clientLocal;
         private readonly IRepository<RandomNumber> _repository;
         private readonly ILogger<StandardNumbersHostedService> _logger;
-        private readonly NumberGenerator _numberGenerator = new NumberGenerator();        
+        private NumberGenerator _numberGenerator;        
 
         public StandardNumbersHostedService(
             IHttpClientFactory httpClientFactory,
             IRepository<RandomNumber> repository,
             ILogger<StandardNumbersHostedService> logger)
         {
+            _numberGenerator = new NumberGenerator();
+            _numberGenerator.NumberGenerated += OnNumberGenerated;
             _httpClientFactory = httpClientFactory;
             _clientLocal = _httpClientFactory.CreateClient("local");
             _repository = repository;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _numberGenerator.NumberGenerated += OnNumberGenerated;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));              
         }
 
         private async void OnNumberGenerated(object sender, NumberGeneratedEventArgs e)
@@ -38,9 +39,24 @@ namespace CodingExercisePDE.Services.HostedService
             try
             {
                 _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number}");
-                var repo = new RandomNumber(e.Number);
-                _repository.Add(repo);
-                bool canSavetoDB = false;
+                var repo = new RandomNumber(e.Number);                
+
+                try
+                {
+                    _repository.Add(repo);
+                    if (await _repository.SaveChangesAsync())
+                    {
+                        _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Error saving to  {nameof(OnNumberGenerated)}");
+                }
 
                 if (e.Number > 800)
                 {
@@ -58,24 +74,13 @@ namespace CodingExercisePDE.Services.HostedService
 
                     var response = await _clientLocal.PostAsync("api/numbers", data, cts).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
-                        canSavetoDB = true;
+                    {
+                        //may be log
+                    }
                     else
                     {
-                        _logger.LogDebug($"StatusCode {response.StatusCode.ToString()} during posting message {dto.ToString()}");
+                        _logger.LogDebug($"StatusCode {response.StatusCode.ToString()} during posting message {dto.ToString()}");                        
                         return;
-                    }
-                }
-
-                if (canSavetoDB)
-                {
-                    //log and save message after posted
-                    if (await _repository.SaveChangesAsync())
-                    {
-                        _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
                     }
                 }
             }
@@ -88,6 +93,9 @@ namespace CodingExercisePDE.Services.HostedService
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("StandardNumbersHostedService is starting.");
+
+
+            await Task.Delay(2 * 1000);
             _numberGenerator.Start(); _logger.LogInformation("_numberGenerator is starting.");
 
             stoppingToken.Register(() => _logger.LogInformation("#1 Register StandardNumbersHostedService background task is stopping."));

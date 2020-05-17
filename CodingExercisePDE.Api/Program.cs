@@ -37,7 +37,7 @@ namespace CodingExercisePDE.Api
                     var context = scope.ServiceProvider.GetService<PdeContext>();
 
                     // for demo purposes, delete the database & migrate on startup so we can start with a clean slate                   
-                    context.Database.EnsureDeleted(); logger?.LogInformation("Called EnsureDeleted");
+                    //context.Database.EnsureDeleted(); logger?.LogInformation("Called EnsureDeleted");
 
                     context.Database.Migrate(); logger?.LogInformation("Called Migrate");
                 }

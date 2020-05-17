@@ -61,7 +61,7 @@ namespace CodingExercisePDE.Api.Controllers
             if (dtos == null)
                 dtos = new List<NumberDto>();
 
-            dtos.Add(dto);
+            dtos.Insert(0,dto);
             _cacheProvider.SetCache(cacheKey, dtos);
             _semaphore.Release();
             return dto;
