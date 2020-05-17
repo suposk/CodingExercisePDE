@@ -33,7 +33,8 @@ namespace CodingExercisePDE.Api
 
             services.AddScoped(typeof(IRepository<RandomNumber>), fa =>
             {
-                var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
+                //var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
+                var ctx = fa.GetService<PdeContext>();
                 var rep = new Repository<RandomNumber>(ctx);
                 return rep;
             });

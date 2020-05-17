@@ -35,10 +35,10 @@ namespace CodingExercisePDE.Api.Controllers
         {                    
 
             var rng = new Random();
-            var repo = new RandomNumber(rng.Next(1, 10));
-            _repository.Add(repo);
 
-            var ok = _repository.SaveChangesAsync().Result;
+            //var repo = new RandomNumber(rng.Next(1, 10));
+            //_repository.Add(repo);
+            //var ok = _repository.SaveChangesAsync().Result;
 
             var all = _repository.GetAllAsync().Result;
 
