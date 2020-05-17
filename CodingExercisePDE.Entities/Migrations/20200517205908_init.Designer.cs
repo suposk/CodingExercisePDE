@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodingExercisePDE.Entities.Migrations
 {
     [DbContext(typeof(PdeContext))]
-    [Migration("20200517143751_init")]
+    [Migration("20200517205908_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,9 @@ namespace CodingExercisePDE.Entities.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("MessageId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("ModifiedAt")

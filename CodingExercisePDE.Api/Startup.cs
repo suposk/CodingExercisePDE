@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using CodingExercisePDE.Entities;
+using CodingExercisePDE.ServiceBusMessaging;
 using CodingExercisePDE.Services;
 using CodingExercisePDE.Services.HostedService;
 using Microsoft.AspNetCore.Builder;
@@ -60,20 +61,33 @@ namespace CodingExercisePDE.Api
             })
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetRetryPolicy())
-                //.AddPolicyHandler(GetCircuitBreakerPolicy())
+                .AddPolicyHandler(GetCircuitBreakerPolicy())
                 ;
 
             services.AddMemoryCache();
             services.AddSingleton<ICacheProvider, CacheProvider>(); //testing
 
-            services.AddHostedService<StandardNumbersHostedService>(sp => 
+            services.AddSingleton<IServiceBusSender, ServiceBusSender>();
+            services.AddSingleton<IServiceBusConsumer, ServiceBusConsumerCreated>(sp =>
             {
                 var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
-                IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
-                var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
-                var httpClientFactory = sp.GetService<IHttpClientFactory>();
-                return new StandardNumbersHostedService(httpClientFactory, repo, logger);
+                IRepository<RandomNumber> repository = new Repository<RandomNumber>(ctx);
+                IHttpClientFactory httpClientFactory = sp.GetService<IHttpClientFactory>();
+                var logger = sp.GetRequiredService<ILogger<ServiceBusConsumerCreated>>();
+                var obj = new ServiceBusConsumerCreated(Configuration, repository, httpClientFactory, logger);
+                obj.RegisterOnMessageHandlerAndReceiveMessages();
+                return obj;
             });
+
+            services.AddHostedService<StandardNumbersHostedService>();
+            //services.AddHostedService<StandardNumbersHostedService>(sp => 
+            //{
+            //    var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
+            //    IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
+            //    var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
+            //    var httpClientFactory = sp.GetService<IHttpClientFactory>();
+            //    return new StandardNumbersHostedService(httpClientFactory, repo, logger);
+            //});
 
             services.AddDbContext<PdeContext>(options =>
             {
@@ -114,6 +128,9 @@ namespace CodingExercisePDE.Api
 
             //app.UseHttpsRedirection();
 
+            //resolve to init
+            var bus = app.ApplicationServices.GetService<IServiceBusConsumer>();
+
             app.UseRouting();
 
             app.UseAuthorization();
@@ -136,7 +153,7 @@ namespace CodingExercisePDE.Api
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .CircuitBreakerAsync(5, TimeSpan.FromMinutes(2));
+                .CircuitBreakerAsync(5, TimeSpan.FromMinutes(1));
         }
     }
 }

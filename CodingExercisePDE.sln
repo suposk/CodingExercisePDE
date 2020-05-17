@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodingExercisePDE.Entities"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodingExercisePDE.Services", "CodingExercisePDE.Services\CodingExercisePDE.Services.csproj", "{7676C309-9BCD-4F16-9052-A4B607162966}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodingExercisePDE.Domain", "CodingExercisePDE.Domain\CodingExercisePDE.Domain.csproj", "{EA444B26-E637-428D-989A-BBB70CD43D57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodingExercisePDE.Domain", "CodingExercisePDE.Domain\CodingExercisePDE.Domain.csproj", "{EA444B26-E637-428D-989A-BBB70CD43D57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodingExercisePDE.ServiceBusMessaging", "CodingExercisePDE.ServiceBusMessaging\CodingExercisePDE.ServiceBusMessaging.csproj", "{46697C06-D328-4E70-87DF-87B64AFF363C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{EA444B26-E637-428D-989A-BBB70CD43D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA444B26-E637-428D-989A-BBB70CD43D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA444B26-E637-428D-989A-BBB70CD43D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46697C06-D328-4E70-87DF-87B64AFF363C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46697C06-D328-4E70-87DF-87B64AFF363C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46697C06-D328-4E70-87DF-87B64AFF363C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46697C06-D328-4E70-87DF-87B64AFF363C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

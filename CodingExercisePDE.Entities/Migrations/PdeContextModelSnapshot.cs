@@ -25,6 +25,9 @@ namespace CodingExercisePDE.Entities.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("TEXT");
 

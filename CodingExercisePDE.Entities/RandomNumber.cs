@@ -20,10 +20,17 @@ namespace CodingExercisePDE.Entities
 
         public Guid RandomNumberId { get; set; }
 
+        public Guid MessageId { get; set; }
+
         public int Number { get; set; }        
 
         public DateTime CreatedAt { get; set; }
 
         public DateTime? ModifiedAt { get; set; }
+
+        public override string ToString()
+        {
+            return $"Number {Number}, MessageId:{MessageId}";
+        }
     }
 }

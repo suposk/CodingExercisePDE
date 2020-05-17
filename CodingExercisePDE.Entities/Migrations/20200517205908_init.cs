@@ -12,6 +12,7 @@ namespace CodingExercisePDE.Entities.Migrations
                 columns: table => new
                 {
                     RandomNumberId = table.Column<Guid>(nullable: false),
+                    MessageId = table.Column<Guid>(nullable: false),
                     Number = table.Column<int>(nullable: false),
                     CreatedAt = table.Column<DateTime>(nullable: false),
                     ModifiedAt = table.Column<DateTime>(nullable: true)

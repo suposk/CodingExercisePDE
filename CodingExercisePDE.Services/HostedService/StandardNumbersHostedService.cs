@@ -10,27 +10,23 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using CodingExercisePDE.Domain;
 using Newtonsoft.Json;
+using CodingExercisePDE.Domain.ServiceBus;
 
 namespace CodingExercisePDE.Services.HostedService
 {
     public class StandardNumbersHostedService : BackgroundService
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly HttpClient _clientLocal;
-        private readonly IRepository<RandomNumber> _repository;
+        private readonly IServiceBusSender _serviceBusSender;
         private readonly ILogger<StandardNumbersHostedService> _logger;
         private NumberGenerator _numberGenerator;        
 
         public StandardNumbersHostedService(
-            IHttpClientFactory httpClientFactory,
-            IRepository<RandomNumber> repository,
+            IServiceBusSender serviceBusSender,
             ILogger<StandardNumbersHostedService> logger)
         {
             _numberGenerator = new NumberGenerator();
             _numberGenerator.NumberGenerated += OnNumberGenerated;
-            _httpClientFactory = httpClientFactory;
-            _clientLocal = _httpClientFactory.CreateClient("local");
-            _repository = repository;
+            _serviceBusSender = serviceBusSender;
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));              
         }
 
@@ -39,50 +35,15 @@ namespace CodingExercisePDE.Services.HostedService
             try
             {
                 _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number}");
-                var repo = new RandomNumber(e.Number);                
 
-                try
+                var mes = new MessagePayload
                 {
-                    _repository.Add(repo);
-                    if (await _repository.SaveChangesAsync())
-                    {
-                        _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error saving to  {nameof(OnNumberGenerated)}");
-                }
-
-                if (e.Number > 800)
-                {
-                    CancellationToken cts = new CancellationTokenSource().Token;
-
-                    //post to endpoint                    
-                    var dto = new NumberDto
-                    {
-                        Id = repo.RandomNumberId,
-                        Number = repo.Number,
-                        CreatedAt = repo.CreatedAt
-                    };
-                    var json = JsonConvert.SerializeObject(dto);
-                    var data = new StringContent(json, Encoding.UTF8, "application/json");
-
-                    var response = await _clientLocal.PostAsync("api/numbers", data, cts).ConfigureAwait(false);
-                    if (response.IsSuccessStatusCode)
-                    {
-                        //may be log
-                    }
-                    else
-                    {
-                        _logger.LogDebug($"StatusCode {response.StatusCode.ToString()} during posting message {dto.ToString()}");                        
-                        return;
-                    }
-                }
+                    Id = Guid.NewGuid(),
+                    ServiceBusMessageType = ServiceBusMessageType.Created,
+                    Number = e.Number,                    
+                    Created = DateTime.UtcNow,
+                };
+                await _serviceBusSender.SendMessage(mes);
             }
             catch (Exception ex)
             {

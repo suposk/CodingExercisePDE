@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CodingExercisePDE.Domain\CodingExercisePDE.Domain.csproj" />
     <ProjectReference Include="..\CodingExercisePDE.Entities\CodingExercisePDE.Entities.csproj" />
+    <ProjectReference Include="..\CodingExercisePDE.ServiceBusMessaging\CodingExercisePDE.ServiceBusMessaging.csproj" />
     <ProjectReference Include="..\CodingExercisePDE.Services\CodingExercisePDE.Services.csproj" />
   </ItemGroup>
 
