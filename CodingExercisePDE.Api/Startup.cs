@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using CodingExercisePDE.Entities;
 using CodingExercisePDE.Services;
@@ -15,6 +16,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Extensions.Http;
 
 namespace CodingExercisePDE.Api
 {
@@ -39,12 +42,27 @@ namespace CodingExercisePDE.Api
                 return rep;
             });
 
+            services.AddHttpClient();
+            services.AddHttpClient("local", c =>
+            {
+                c.BaseAddress = new Uri("https://localhost:5001");
+                c.DefaultRequestHeaders.Add("Accept", "application/json");
+                c.DefaultRequestHeaders.Add("User-Agent", "HttpClientFactory-Sample");
+            })
+                .SetHandlerLifetime(TimeSpan.FromMinutes(5))
+                .AddPolicyHandler(GetRetryPolicy())
+                .AddPolicyHandler(GetCircuitBreakerPolicy());
+
+            services.AddMemoryCache();
+            services.AddSingleton<ICacheProvider, CacheProvider>(); //testing
+
             services.AddHostedService<StandardNumbersHostedService>(sp => 
             {
                 var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
                 IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
                 var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
-                return new StandardNumbersHostedService(repo, logger);
+                var httpClientFactory = sp.GetService<IHttpClientFactory>();
+                return new StandardNumbersHostedService(httpClientFactory, repo, logger);
             });
 
             services.AddDbContext<PdeContext>(options =>
@@ -84,6 +102,21 @@ namespace CodingExercisePDE.Api
             {
                 endpoints.MapControllers();
             });
+        }
+
+        static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+        }
+
+        static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+        {
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .CircuitBreakerAsync(10, TimeSpan.FromMinutes(5));
         }
     }
 }

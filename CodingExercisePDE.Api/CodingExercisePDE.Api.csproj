@@ -15,9 +15,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="3.1.4" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CodingExercisePDE.Domain\CodingExercisePDE.Domain.csproj" />
     <ProjectReference Include="..\CodingExercisePDE.Entities\CodingExercisePDE.Entities.csproj" />
     <ProjectReference Include="..\CodingExercisePDE.Services\CodingExercisePDE.Services.csproj" />
   </ItemGroup>
