@@ -58,7 +58,8 @@ namespace CodingExercisePDE.Api
             })
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetRetryPolicy())
-                .AddPolicyHandler(GetCircuitBreakerPolicy());
+                //.AddPolicyHandler(GetCircuitBreakerPolicy())
+                ;
 
             services.AddMemoryCache();
             services.AddSingleton<ICacheProvider, CacheProvider>(); //testing
