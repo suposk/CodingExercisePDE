@@ -80,14 +80,6 @@ namespace CodingExercisePDE.Api
             });
 
             services.AddHostedService<StandardNumbersHostedService>();
-            //services.AddHostedService<StandardNumbersHostedService>(sp => 
-            //{
-            //    var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
-            //    IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
-            //    var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
-            //    var httpClientFactory = sp.GetService<IHttpClientFactory>();
-            //    return new StandardNumbersHostedService(httpClientFactory, repo, logger);
-            //});
 
             services.AddDbContext<PdeContext>(options =>
             {
@@ -146,14 +138,14 @@ namespace CodingExercisePDE.Api
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .CircuitBreakerAsync(5, TimeSpan.FromMinutes(1));
+                .CircuitBreakerAsync(3, TimeSpan.FromMinutes(1));
         }
     }
 }
