@@ -31,17 +31,14 @@ namespace CodingExercisePDE.Api.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<IEnumerable<WeatherForecast>> Get()
         {                    
 
             var rng = new Random();
+            var all = await _repository.GetAllAsync();
 
-            //var repo = new RandomNumber(rng.Next(1, 10));
-            //_repository.Add(repo);
-            //var ok = _repository.SaveChangesAsync().Result;
-
-            var all = _repository.GetAllAsync().Result;
-
+            int x = 1;
+            
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

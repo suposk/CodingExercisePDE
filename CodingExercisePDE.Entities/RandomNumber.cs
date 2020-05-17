@@ -11,12 +11,11 @@ namespace CodingExercisePDE.Entities
             
         }
 
-        public RandomNumber(int number, DateTime? modifiedAt = null)
+        public RandomNumber(int number)
         {
             RandomNumberId = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
-            Number = number;
-            ModifiedAt = modifiedAt;
+            Number = number;            
         }
 
         public Guid RandomNumberId { get; set; }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodingExercisePDE.Entities;
 using CodingExercisePDE.Services;
+using CodingExercisePDE.Services.HostedService;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -31,12 +32,19 @@ namespace CodingExercisePDE.Api
         {
             services.AddControllers();
 
-            services.AddScoped(typeof(IRepository<RandomNumber>), fa =>
-            {
-                //var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
-                var ctx = fa.GetService<PdeContext>();
+            services.AddScoped(typeof(IRepository<RandomNumber>), sp =>
+            {                
+                var ctx = sp.GetService<PdeContext>();
                 var rep = new Repository<RandomNumber>(ctx);
                 return rep;
+            });
+
+            services.AddHostedService<StandardNumbersHostedService>(sp => 
+            {
+                var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
+                IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
+                var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
+                return new StandardNumbersHostedService(repo, logger);
             });
 
             services.AddDbContext<PdeContext>(options =>
