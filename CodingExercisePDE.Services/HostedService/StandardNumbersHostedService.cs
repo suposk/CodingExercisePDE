@@ -40,7 +40,8 @@ namespace CodingExercisePDE.Services.HostedService
                 _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number}");
                 var repo = new RandomNumber(e.Number);
                 _repository.Add(repo);
-                
+                bool canSavetoDB = false;
+
                 if (e.Number > 800)
                 {
                     CancellationToken cts = new CancellationTokenSource().Token;
@@ -57,21 +58,24 @@ namespace CodingExercisePDE.Services.HostedService
 
                     var response = await _clientLocal.PostAsync("api/numbers", data, cts).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
+                        canSavetoDB = true;
+                    else
                     {
-                        //log and save message after posted
-                        if (await _repository.SaveChangesAsync())
-                        {
-                            _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
-                        }
-                        else
-                        {
-                            _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
-                        }
+                        _logger.LogDebug($"StatusCode {response.StatusCode.ToString()} during posting message {dto.ToString()}");
+                        return;
+                    }
+                }
+
+                if (canSavetoDB)
+                {
+                    //log and save message after posted
+                    if (await _repository.SaveChangesAsync())
+                    {
+                        _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
                     }
                     else
                     {
-                        _logger.LogDebug($"StatusCode {response.StatusCode.ToString()} during posting message {dto.ToString()}");                        
-                        return;
+                        _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
                     }
                 }
             }
@@ -90,7 +94,7 @@ namespace CodingExercisePDE.Services.HostedService
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                int sec = 30;
+                int sec = 60;
                 _logger.LogDebug($"StandardNumbersHostedService background task is doing background work every {sec} sec.");
                                 
                 await Task.Delay(sec * 1000, stoppingToken);

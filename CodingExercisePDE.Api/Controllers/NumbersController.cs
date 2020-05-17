@@ -41,21 +41,20 @@ namespace CodingExercisePDE.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<bool>> Post(NumberDto dto)
+        public async Task<ActionResult<NumberDto>> Post(NumberDto dto)
         {
             if (dto == null || dto.Number < 0)
                 return BadRequest();
 
             _logger.LogDebug($"{nameof(Post)} mesasage number {dto.Number}, Id {dto.Id} received ");
 
-            //#region Test Retry            
+            #region Test Retry            
 
-            int x = 900;
-            if (dto.Number >= x)
-                //throw new Exception($"test exception value {dto.Number}");
-                return Problem($"fake error for value {dto.Number}");
+            //int x = 900;
+            //if (dto.Number >= x)              
+            //    return Problem($"fake error for value {dto.Number}");
 
-            //#endregion
+            #endregion
 
             _semaphore.Wait();
             var dtos = _cacheProvider.GetFromCache<List<NumberDto>>(cacheKey);
@@ -65,7 +64,7 @@ namespace CodingExercisePDE.Api.Controllers
             dtos.Add(dto);
             _cacheProvider.SetCache(cacheKey, dtos);
             _semaphore.Release();
-            return true;
+            return dto;
         }
     }
 }

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Polly;
 using Polly.Extensions.Http;
 
@@ -34,6 +35,12 @@ namespace CodingExercisePDE.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PDE API", Version = "v1" });
+            });
 
             services.AddScoped(typeof(IRepository<RandomNumber>), sp =>
             {                
@@ -92,6 +99,16 @@ namespace CodingExercisePDE.Api
 
             }
 
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            app.UseSwagger();
+
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+            // specifying the Swagger JSON endpoint.
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PDE API v1");
+            });
+
             //app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -109,14 +126,14 @@ namespace CodingExercisePDE.Api
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
 
         static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
         {
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .CircuitBreakerAsync(10, TimeSpan.FromMinutes(5));
+                .CircuitBreakerAsync(5, TimeSpan.FromMinutes(2));
         }
     }
 }
