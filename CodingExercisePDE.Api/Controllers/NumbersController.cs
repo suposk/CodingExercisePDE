@@ -50,10 +50,10 @@ namespace CodingExercisePDE.Api.Controllers
 
             //#region Test Retry            
 
-            //int x = 3;
-            //if (dto.Number >= x)
-            //    //throw new Exception($"test exception value {dto.Number}");
-            //    return Problem($"test error for value {dto.Number}");
+            int x = 900;
+            if (dto.Number >= x)
+                //throw new Exception($"test exception value {dto.Number}");
+                return Problem($"fake error for value {dto.Number}");
 
             //#endregion
 
