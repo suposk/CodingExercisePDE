@@ -41,22 +41,11 @@ namespace CodingExercisePDE.Services.HostedService
                 _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number}");
                 var repo = new RandomNumber(e.Number);                
 
-                try
-                {
-                    _repository.Add(repo);
-                    if (await _repository.SaveChangesAsync())
-                    {
-                        _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");
-                    }
-                    else
-                    {
-                        _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error saving to  {nameof(OnNumberGenerated)}");
-                }
+                _repository.Add(repo);
+                if (await _repository.SaveChangesAsync())                
+                    _logger.LogDebug($"{nameof(OnNumberGenerated)}: {e.Number} saved to DB");                
+                else                
+                    _logger.LogWarning($"Failed to save to DB {nameof(OnNumberGenerated)}");                                
 
                 if (e.Number > 800)
                 {
