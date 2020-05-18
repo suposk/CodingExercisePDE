@@ -68,6 +68,8 @@ namespace CodingExercisePDE.ServiceBusMessaging
                 _logger.LogDebug($"Read from Queue: {myPayload}");
                                 
                 bool canSaveToDb = true;
+                _repository.Add(repo);
+
                 if (myPayload.Number > 800)
                 {
                     CancellationToken cts = new CancellationTokenSource().Token;
@@ -84,8 +86,7 @@ namespace CodingExercisePDE.ServiceBusMessaging
 
                     var response = await _clientLocal.PostAsync("api/numbers", data, cts).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode)
-                    {
-                        _repository.Add(repo);
+                    {                        
                         //only save if posted sussfully
                     }
                     else
@@ -96,20 +97,13 @@ namespace CodingExercisePDE.ServiceBusMessaging
                         return;
                     }
                 }
-                try
+                if (canSaveToDb)
                 {
-                    if (canSaveToDb)
-                    {
-                        if (await _repository.SaveChangesAsync())
-                            _logger.LogDebug($"{nameof(ProcessMessagesAsync)}: {repo} saved to DB");
-                        else
-                            _logger.LogWarning($"Failed to save to DB {nameof(ProcessMessagesAsync)}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error saving to DB {nameof(ProcessMessagesAsync)}");
-                }
+                    if (await _repository.SaveChangesAsync())
+                        _logger.LogDebug($"{nameof(ProcessMessagesAsync)}: {repo} saved to DB");
+                    else
+                        _logger.LogWarning($"Failed to save to DB {nameof(ProcessMessagesAsync)}");
+                }               
 
                 await _queueClient.CompleteAsync(message.SystemProperties.LockToken).ConfigureAwait(false);
             }
