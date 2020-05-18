@@ -52,21 +52,21 @@ namespace CodingExercisePDE.Services.HostedService
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
+        {            
+            await Task.Delay(2 * 1000).ConfigureAwait(false);
             _logger.LogInformation("StandardNumbersHostedService is starting.");
 
-
-            await Task.Delay(2 * 1000);
             _numberGenerator.Start(); _logger.LogInformation("_numberGenerator is starting.");
 
             stoppingToken.Register(() => _logger.LogInformation("#1 Register StandardNumbersHostedService background task is stopping."));
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                int sec = 60;
+                int sec = 30;
                 _logger.LogDebug($"StandardNumbersHostedService background task is doing background work every {sec} sec.");
-                                
-                await Task.Delay(sec * 1000, stoppingToken);
+
+                //await SendToQueue(); //only for debuging
+                await Task.Delay(sec * 1000, stoppingToken).ConfigureAwait(false);
             }
 
             _logger.LogInformation("StandardNumbersHostedService background task is stopping.");
@@ -80,5 +80,33 @@ namespace CodingExercisePDE.Services.HostedService
             _numberGenerator.Stop();
             return base.StopAsync(cancellationToken);
         }
+
+        #region for Testing
+
+        private int _counter;
+        private async Task SendToQueue()
+        {
+            try
+            {
+                _counter++;
+                _logger.LogDebug($"{nameof(SendToQueue)}: {_counter}");
+                
+                var mes = new MessagePayload
+                {
+                    Id = Guid.NewGuid(),
+                    ServiceBusMessageType = ServiceBusMessageType.Created,
+                    Number = _counter,
+                    Created = DateTime.UtcNow,
+                };
+                await _serviceBusSender.SendMessage(mes);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error in {nameof(SendToQueue)}");
+            }
+            _ = Task.CompletedTask;
+        }
+
+        #endregion
     }
 }
