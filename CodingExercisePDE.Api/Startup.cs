@@ -66,7 +66,7 @@ namespace CodingExercisePDE.Api
 
             services.AddHostedService<StandardNumbersHostedService>(sp => 
             {
-                var ctx = new PdeContext(Configuration.GetConnectionString("SqlLietConnString"));
+                var ctx = new PdeContext(Configuration.GetConnectionString("SqlLiteConnString"));
                 IRepository<RandomNumber> repo = new Repository<RandomNumber>(ctx);
                 var logger = sp.GetRequiredService<ILogger<StandardNumbersHostedService>>();
                 var httpClientFactory = sp.GetService<IHttpClientFactory>();
@@ -76,7 +76,7 @@ namespace CodingExercisePDE.Api
             services.AddDbContext<PdeContext>(options =>
             {
                 //sql Lite                
-                options.UseSqlite(Configuration.GetConnectionString("SqlLietConnString"));
+                options.UseSqlite(Configuration.GetConnectionString("SqlLiteConnString"));
             });
         }
 
